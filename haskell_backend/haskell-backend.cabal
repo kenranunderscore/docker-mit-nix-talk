@@ -1,0 +1,16 @@
+cabal-version:      3.0
+name:               haskell-backend
+version:            0.1.0.0
+license:            NONE
+author:             Johannes Maier
+maintainer:         johannes.maier@active-group.de
+
+executable haskell-backend
+    main-is:          Main.hs
+    build-depends:    base
+                    , containers
+                    , http-types
+                    , scotty
+                    , stm
+    hs-source-dirs:   src-exe
+    default-language: Haskell2010
