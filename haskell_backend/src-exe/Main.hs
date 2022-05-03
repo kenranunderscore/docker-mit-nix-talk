@@ -12,12 +12,43 @@ import Control.Monad.IO.Class (liftIO)
 import Web.Scotty
 import Network.HTTP.Types.Status
 
--- We're caching numbers, but for simplicity the keys
--- are just strings
-type NumberCache = Map String Int
+-- | Keys are just strings here.
+type Key = String
+
+-- | We're caching numbers, but for simplicity the keys are just
+-- strings
+type NumberCache = Map Key Int
 
 emptyCache :: NumberCache
 emptyCache = Map.empty
+
+prettyKey :: Key -> String
+prettyKey key = "'" <> key <> "'"
+
+getFromCache :: TVar NumberCache -> ActionM ()
+getFromCache theCache = do
+  k <- param "key"
+  liftIO . putStrLn $ "Received request for key " <> prettyKey k
+  cache <- liftIO $ readTVarIO theCache
+  case Map.lookup k cache of
+    Nothing -> do
+      liftIO . putStrLn $ "Didn't find " <> prettyKey k <> " in cache"
+      status status404
+      json ("Key not found" :: String)
+    Just value -> do
+      liftIO . putStrLn $ "Got it!"
+      json value
+
+addToCache :: TVar NumberCache -> ActionM ()
+addToCache theCache = do
+  k <- param "key"
+  val :: Int <- jsonData
+  let logMsg =
+        mconcat ["Adding ", prettyKey k, " with value ", show val, " to the cache"]
+  liftIO $ putStrLn logMsg
+  -- Update the cache atomically
+  liftIO . atomically $
+    modifyTVar theCache (Map.alter (const $ Just val) k)
 
 main :: IO ()
 main = do
@@ -28,20 +59,5 @@ main = do
   -- /cache/:key: reading from the cache and writing
   -- to it
   scotty port $ do
-    -- Reading from the cache
-    get "/cache/:key" $ do
-      k <- param "key"
-      cache <- liftIO $ readTVarIO theCache
-      case Map.lookup k cache of
-        Nothing -> do
-          status status404
-          json ("Key not found" :: String)
-        Just value ->
-          json value
-    -- Writing to the cache
-    put "/cache/:key" $ do
-      k <- param "key"
-      val :: Int <- jsonData
-      -- Update the cache atomically
-      liftIO . atomically $
-        modifyTVar theCache (Map.alter (const $ Just val) k)
+    get "/cache/:key" $ getFromCache theCache
+    put "/cache/:key" $ addToCache theCache
