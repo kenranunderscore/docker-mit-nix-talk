@@ -1,9 +1,9 @@
 package main
 
 import (
-	"errors"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -41,7 +41,6 @@ func checkCache(prod TwoInts) (int, error) {
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		var n int
 		json.NewDecoder(resp.Body).Decode(&n)
-		log.Printf("%v", n)
 		return n, nil
 	}
 
@@ -49,7 +48,7 @@ func checkCache(prod TwoInts) (int, error) {
 }
 
 func addToCache(key string, product int) {
-	log.Printf("Attempting to add key-value pair (%v, %v) to cache", key, product)
+	log.Printf("Attempting to add key-value pair ('%v', %v) to cache", key, product)
 
 	// The payload/body is just the integer product
 	json, err := json.Marshal(product)
