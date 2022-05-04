@@ -6,6 +6,7 @@ in pkgs.mkShell {
     pkgs.go
     # Python
     pkgs.python310
+    pkgs.poetry
     # Haskell
     pkgs.ghc
     pkgs.cabal-install

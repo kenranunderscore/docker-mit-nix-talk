@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "python_client"
+version = "0.1.0"
+description = ""
+authors = ["Johannes Maier <johannes.maier@active-group.de>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+loguru = "^0.6.0"
+requests = "^2.27.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[tool.poetry.scripts]
+demo = "python_client:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
