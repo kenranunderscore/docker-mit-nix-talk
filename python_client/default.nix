@@ -1,8 +1,25 @@
 { pkgs ? import <nixpkgs> { } }:
 
-# Sadly this is broken just now:
+# Sadly this is broken in the current nixpkgs master branch just now:
 # https://github.com/nix-community/poetry2nix/issues/606
+# But fixed in poetry2nix's master branch.
 # pkgs.poetry2nix.mkPoetryApplication {
+#   projectDir = ./.;
+#   python = pkgs.python310;
+# }
+
+# # As a workaround, we can get a bleeding-edge poetry2nix ourselves:
+# let
+#   poetry2nix = import (pkgs.fetchFromGitHub {
+#     owner = "nix-community";
+#     repo = "poetry2nix";
+#     rev = "6ed6894f58177179f737a820f79e3e04fe0ec0d5";
+#     sha256 = "sha256-iY7KGz7HbUUxvM/e0fL8p27eHWuI4wMm/S/iIdYxXrU=";
+#   }) {
+#     inherit pkgs;
+#     inherit (pkgs) poetry;
+#   };
+# in poetry2nix.mkPoetryApplication {
 #   projectDir = ./.;
 #   python = pkgs.python310;
 # }
