@@ -1,1 +1,8 @@
+# Some output directories for tooling (`cabal`, `poetry`, etc.)
 dist-newstyle
+dist
+
+# This is the default symlink name that's created whenever you build
+# anything with `nix-build` or `nix build`.  It should thus never be
+# committed.
+result
