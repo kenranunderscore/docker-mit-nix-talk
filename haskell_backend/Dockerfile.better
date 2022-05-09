@@ -1,0 +1,19 @@
+FROM haskell@sha256:f99b7e5417f75089b53e1077a68c6333c48b82aff478a8af292a7b7f8e541832
+
+WORKDIR /build
+
+COPY haskell-backend.cabal ./
+COPY src-exe src-exe
+RUN cabal update && cabal install
+
+# Multi-stage build
+FROM ubuntu@sha256:26c68657ccce2cb0a31b330cb0be2b5e108d467f641c62e13ab40cbec258c68d
+
+RUN apt-get update && apt-get install -y zlib1g-dev
+
+# Benutzer und Gruppe anlegen
+RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 prod
+USER prod
+
+COPY --from=0 /root/.cabal/bin/haskell-backend ./
+CMD [ "./haskell-backend" ]
