@@ -4,7 +4,7 @@
 #+REVEAL_THEME: ./css/themes/active.css
 #+REVEAL_HLEVEL: 100
 #+REVEAL_TRANS: none
-#+OPTIONS: toc:nil reveal-center:f H:4 num:nil
+#+OPTIONS: toc:nil reveal_center:nil H:4
 
 * Ausgangssituation
 
@@ -127,7 +127,7 @@ FROM haskell@sha256:f99b7e5417f75089b53e1077a68c6333c48b82aff478a8af292a7b7f8e54
 ...
 #+end_src
 
-- Feste Version der benötigten Tools (vermutlich!) ➜ besser
+- Feste Version der benötigten Tools ➜ besser
 
 * Zweiter Versuch: Analyse
 
@@ -169,7 +169,7 @@ RUN apt-get update && apt-get install -y zlib1g-dev
 ...
 #+end_src
 
-😞
+Benötigte Laufzeitabhängigkeiten 😞
 
 * Zweiter Versuch: Analyse
 
@@ -197,7 +197,113 @@ CMD [ "./haskell-backend" ]
 
 - Probleme beim Erstellen des =Dockerfile=: Laufzeitabhängigkeiten
   fehlen oder unpassend!
-- =alpine= nicht einfach möglich (=musl= vs. =libc=)
-- Bräuchten 3 Pinning-Mechanismen: Docker, =apt=, =cabal=
+- =alpine= nicht einfach möglich (=musl= vs. =libc=, andere
+  Bibliotheken/Versionen)
+- Anzahl Pinning-Mechanismen = Anzahl Tools, Sprachen etc.
+
+* Zweiter Versuch: Fazit
+
+- Probleme beim Erstellen des =Dockerfile=: Laufzeitabhängigkeiten
+  fehlen oder unpassend! *(Reproduzierbarkeit)*
+- =alpine= nicht einfach möglich (=musl= vs. =libc=, andere
+  Bibliotheken/Versionen) *(Minimalität)*
+- Anzahl Pinning-Mechanismen = Anzahl Tools, Sprachen
+  etc. (*Reproduzierbarkeit*)
+
+FIXME Notes: Tools heißt nicht unbedingt "Zur Entwicklung". Sobald
+Docker verwendet wird, braucht man neue Tools. "Accelerate" -> freie
+Toolwahl macht produktiver
+
+➜ Gute Dockerfiles existieren, aber sie sind sehr schwer zu schreiben
+
+➜ Je "besser" das Dockerfile, desto höher der Wartungsaufwand
+
+* Wunsch
+
+- Abhängigkeitsgraph(en) unserer Programme bekannt und fixiert
+
+* Bauen?
+
+FIXME
+
+* Laufen lassen?
+
+#+begin_src console
+$ ldd ~/path/to/haskell-backend
+linux-vdso.so.1 (0x00007ffebdb24000)
+libpthread.so.0 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/libpthread.so.0 (0x00007fb3b72db000)
+libz.so.1 => /nix/store/b36ilvc5hhfpcp7kv1kvrkgcxxpmxfsd-zlib-1.2.12/lib/libz.so.1 (0x00007fb3b72bd000)
+libgmp.so.10 => /nix/store/qxrvrhlfaislinykki6qy6nqd4wv8mdp-gmp-with-cxx-6.2.1/lib/libgmp.so.10 (0x00007fb3b721c000)
+libc.so.6 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/libc.so.6 (0x00007fb3b701d000)
+libm.so.6 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/libm.so.6 (0x00007fb3b6f42000)
+librt.so.1 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/librt.so.1 (0x00007fb3b6f3d000)
+libdl.so.2 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/libdl.so.2 (0x00007fb3b6f38000)
+libffi.so.8 => /nix/store/gm6q7jmajjmnwd29wgbq2jm3x37vsw3h-libffi-3.4.2/lib/libffi.so.8 (0x00007fb3b6f2b000)
+/nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/ld-linux-x86-64.so.2 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib64/ld-linux-x86-64.so.2 (0x00007fb3b72e2000)
+#+end_src
+
+* Nix!
+
+https://nixos.org
+
+- Programmiersprache
+- Package-Manager für "Bauanleitungen" (sprachagnostisch)
+- (Betriebssystem)
+
+TODO NIXKRAM, Bauanleitung zeigen, evtl. Diagramm mit Phasen, auch
+Patch zeigen!
+
+* =haskell_backend/default.nix=
+
+#+begin_src nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.haskellPackages.callCabal2nix "haskell-backend" ./. { }
+#+end_src
+
+* =go_backend/default.nix=
+
+#+begin_src nix
+{ pkgs ? import <nixpkgs> { } }:
+
+pkgs.buildGoModule {
+  src = pkgs.lib.cleanSource ./.;
+  pname = "go_backend";
+  version = "0.1.0";
+  vendorSha256 = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
+}
+#+end_src
+
+* =python_client/default.nix=
+
+#+begin_src nix
+{ pkgs ? import <nixpkgs> { } }:
+
+let myPython = pkgs.python310.withPackages (p: [ p.loguru p.requests ]);
+in pkgs.writeShellScript "demo" ''
+  ${myPython}/bin/python ${./python_client}/__init__.py
+''
+#+end_src
+
+* Docker-Images mit Nix bauen
+
+- Docker-Layers bestehen aus File-System-Diffs (OCI Image Format)
+- Kennen Abschluss nixifizierter Anwendungen
+
+➜ Kennen auch das Diff
+
+* Neue Anforderung
+
+Beide Services in einem Image!
 
 FIXME =ldd=-Beispiel
+
+FIXME ...
+
+* Nix-Hürden
+
+- Lernkurve
+- Obskure Sprache
+- Dokumentation
+- Bewegt sich sehr schnell
+- Große Unterschiede bei Sprachunterstützung

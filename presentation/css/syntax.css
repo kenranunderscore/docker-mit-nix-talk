@@ -66,3 +66,9 @@
 .org-variable-name {
     color: var(--color-variable-name);
 }
+
+.src.src-console {
+    font-size: 20px;
+    position: relative;
+    left: -400px;
+}
