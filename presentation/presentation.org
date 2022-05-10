@@ -1,0 +1,203 @@
+#+title: Try it, use it, build it, patch it, cache it, pin it, dockerize it
+#+author: Johannes Maier
+#+REVEAL_PLUGINS: (notes)
+#+REVEAL_THEME: ./css/themes/active.css
+#+REVEAL_HLEVEL: 100
+#+REVEAL_TRANS: none
+#+OPTIONS: toc:nil reveal-center:f H:4 num:nil
+
+* Ausgangssituation
+
+Unsere Anwendung / Services
+
+#+begin_src plantuml :file plantuml/output/c4.png
+@startuml
+!include plantuml/plugins/C4_Container.puml
+
+LAYOUT_LEFT_RIGHT()
+
+Container(goBackend, "Calculator service (Go)")
+Container(haskellBackend, "Caching service (Haskell)")
+Container(client, "Client (Python)")
+Rel(client, goBackend, "requests calculation of a * b")
+Rel(goBackend, haskellBackend, "asks cache for existing result")
+Rel(goBackend, haskellBackend, "adds new results")
+
+@enduml
+#+end_src
+
+* Ausgangssituation
+
+Unsere Anwendung / Services
+
+#+begin_src plantuml :file plantuml/output/c4.png
+@startuml
+!include plantuml/plugins/C4_Container.puml
+
+LAYOUT_LEFT_RIGHT()
+
+Container(goBackend, "Calculator service (Go)")
+Container(haskellBackend, "Caching service (Haskell)")
+Container(client, "Client (Python)")
+Rel(client, goBackend, "requests calculation of a * b")
+Rel(goBackend, haskellBackend, "asks cache for existing result")
+Rel(goBackend, haskellBackend, "adds new results")
+
+@enduml
+#+end_src
+
+➜ Soll als Docker-Komposition aus drei Images ausgeliefert werden
+
+* Anforderungen an Auslieferung
+
+1. Minimalität bzgl.
+   - Größe
+   - installierter Software
+2. Reproduzierbarkeit
+3. Effizientes Bauen (Caching)
+4. Evtl. festes Basisimage ("nur Debian erlaubt")
+
+* Dockerfile des Caching-Service
+
+#+begin_src dockerfile
+FROM ubuntu
+
+COPY . .
+RUN apt-get update
+RUN apt-get install -y cabal-install zlib1g-dev
+RUN cabal update
+RUN cabal build
+CMD cabal run
+#+end_src
+
+Probleme?
+
+* Dockerfile des Caching-Service
+
+#+begin_src dockerfile
+# Basisimage nicht gepinnt -> Reproduzierbarkeit
+FROM ubuntu
+
+# Zu früh -> zerstört Caching
+COPY . .
+# - Wird einzeln gecacht, daher bei Änderungen danach nicht neu ausgeführt
+# - Reproduzierbarkeit unmöglich
+RUN apt-get update
+RUN apt-get install -y cabal-install zlib1g-dev
+
+# S.o.
+RUN cabal update
+RUN cabal build
+# Hier sollte das gebaute Binary laufen und cabal unnötig sein
+CMD cabal run
+#+end_src
+
+- Keine Minimalität wegen unnötig enthaltener Software
+
+* Zweiter Versuch
+
+#+begin_src dockerfile
+FROM haskell@sha256:f99b7e5417f75089b53e1077a68c6333c48b82aff478a8af292a7b7f8e541832
+
+WORKDIR /build
+
+COPY haskell-backend.cabal ./
+COPY src-exe src-exe
+RUN cabal update && cabal install
+
+# Multi-stage build
+FROM ubuntu@sha256:26c68657ccce2cb0a31b330cb0be2b5e108d467f641c62e13ab40cbec258c68d
+
+RUN apt-get update && apt-get install -y zlib1g-dev
+
+# Benutzer und Gruppe anlegen
+RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 prod
+USER prod
+
+COPY --from=0 /root/.cabal/bin/haskell-backend ./
+CMD [ "./haskell-backend" ]
+#+end_src
+
+Wie ist es nun?
+
+* Zweiter Versuch: Analyse
+
+#+begin_src dockerfile
+FROM haskell@sha256:f99b7e5417f75089b53e1077a68c6333c48b82aff478a8af292a7b7f8e541832
+...
+#+end_src
+
+- Feste Version der benötigten Tools (vermutlich!) ➜ besser
+
+* Zweiter Versuch: Analyse
+
+#+begin_src dockerfile
+...
+COPY haskell-backend.cabal ./
+COPY src-exe src-exe
+...
+#+end_src
+
+- Nur das Nötigste (vermutlich!) ➜ besser
+
+* Zweiter Versuch: Analyse
+
+#+begin_src dockerfile
+...
+RUN cabal update && cabal install
+...
+#+end_src
+
+- Verlassen uns auf Abhängigkeitsmanagement bzw. Pinning durch =cabal=
+
+* Zweiter Versuch: Analyse
+
+#+begin_src dockerfile
+...
+FROM ubuntu@sha256:26c68657ccce2cb0a31b330cb0be2b5e108d467f641c62e13ab40cbec258c68d
+...
+#+end_src
+
+- Feste Basis ➜ besser
+- Minimalität?
+
+* Zweiter Versuch: Analyse
+
+#+begin_src dockerfile
+...
+RUN apt-get update && apt-get install -y zlib1g-dev
+...
+#+end_src
+
+😞
+
+* Zweiter Versuch: Analyse
+
+#+begin_src dockerfile
+...
+RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 prod
+USER prod
+...
+#+end_src
+
+- Service läuft unter dediziertem User, nicht =root= ➜ besser
+
+* Zweiter Versuch: Analyse
+
+#+begin_src dockerfile
+...
+COPY --from=0 /root/.cabal/bin/haskell-backend ./
+CMD [ "./haskell-backend" ]
+...
+#+end_src
+
+- Lediglich fertiges Binary enthalten aus vorigem Build
+
+* Zweiter Versuch: Fazit
+
+- Probleme beim Erstellen des =Dockerfile=: Laufzeitabhängigkeiten
+  fehlen oder unpassend!
+- =alpine= nicht einfach möglich (=musl= vs. =libc=)
+- Bräuchten 3 Pinning-Mechanismen: Docker, =apt=, =cabal=
+
+FIXME =ldd=-Beispiel

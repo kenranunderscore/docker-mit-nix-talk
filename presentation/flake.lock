@@ -1,0 +1,94 @@
+{
+  "nodes": {
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1649676176,
+        "narHash": "sha256-OWKJratjt2RW151VUlJPRALb7OU2S5s+f0vLj4o1bHM=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "a4b154ebbdc88c8498a5c7b01589addc9e9cb678",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "mathjax": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1631805441,
+        "narHash": "sha256-ch71l17qpluCCIZDdj543PgzPrtIdGQyNwnR/7nl7fQ=",
+        "owner": "mathjax",
+        "repo": "mathjax",
+        "rev": "bea9e1a6e6433d6eef739f3df1f449d49285d0cd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mathjax",
+        "repo": "mathjax",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1652082323,
+        "narHash": "sha256-7GSVLvfCJtH9dJ3om9Lg4fsi9UKvoxxR69gUTcx0ol8=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "2a3aac479caeba0a65b2ad755fe5f284f1fde74d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "master",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "plantumlC4": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1650275511,
+        "narHash": "sha256-vkMSAKzc7hYxL9fBAf5TSdDBeDGpheF7uluqRn3UO6I=",
+        "owner": "plantuml-stdlib",
+        "repo": "c4-plantuml",
+        "rev": "23ce5986ed50232d85f86f65c5d254f7e38326d6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "plantuml-stdlib",
+        "repo": "c4-plantuml",
+        "type": "github"
+      }
+    },
+    "revealjs": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1651495761,
+        "narHash": "sha256-B3L8h0CyYgZCen8aWyLiDXHZMugXAzFToLJNg8f2PWU=",
+        "owner": "hakimel",
+        "repo": "reveal.js",
+        "rev": "0ca389721c5c7eff5db6f67159cbb1cdd51a3d7f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hakimel",
+        "repo": "reveal.js",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "mathjax": "mathjax",
+        "nixpkgs": "nixpkgs",
+        "plantumlC4": "plantumlC4",
+        "revealjs": "revealjs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

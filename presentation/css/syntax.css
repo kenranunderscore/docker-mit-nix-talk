@@ -1,0 +1,68 @@
+/* Colors taken from the Modus Operandi theme, which fulfills the WCAG
+   AAA standard for accessibility.
+*/
+
+:root {
+    --color-builtin: #721045;
+    --font-weight-builtin: bold;
+    --color-doc: #184034;
+    --color-type: #005a5f;
+    --font-weight-type: bold;
+    --color-string: #006800;
+    --color-comment: #505050;
+    --color-keyword: #005f88;
+    --font-weight-keyword: bold;
+    --color-warning: #813e00;
+    --color-constant: #7f10d0;
+    --color-doc-markup: var(--doc);
+    --color-preprocessor: #0031a9;
+    --color-function-name: #a8007f;
+    --color-variable-name: #1f1fce;
+}
+
+.org-builtin {
+    color: var(--color-builtin);
+    font-weight: var(--font-weight-builtin);
+}
+
+.org-doc {
+    color: var(--color-doc);
+}
+
+.org-type {
+    color: var(--color-type);
+    font-weight: var(--font-weight-type);
+}
+
+.org-string {
+    color: var(--color-string);
+}
+
+.org-comment {
+    color: var(--color-comment);
+}
+
+.org-keyword {
+    color: var(--color-keyword);
+    font-weight: var(--font-weight-keyword);
+}
+
+.org-warning {
+    color: var(--color-warning);
+}
+
+.org-constant {
+    color: var(--color-constant);
+}
+
+.org-preprocessor {
+    color: var(--color-preprocessor);
+}
+
+.org-function-name {
+    color: var(--color-function-name);
+}
+
+.org-variable-name {
+    color: var(--color-variable-name);
+}

@@ -1,0 +1,138 @@
+/**
+ * Active theme for reveal.js.
+ *
+ */
+
+
+// Default mixins and settings -----------------
+@import "../template/mixins";
+@import "../template/settings";
+// ---------------------------------------------
+
+
+
+// Include theme-specific fonts
+@import url(../fonts.css);
+
+/* Syntax highlighting via CSS classes */
+@import url(../syntax.css);
+
+$mainFontSize: 30px;
+
+// Override theme settings (see ../template/settings.scss)
+$mainColor: #333;
+$mainFont: 'Sentinel';
+$headingFont: 'Sentinel';
+$headingColor: #ad4c3f;
+$headingTextShadow: none;
+$backgroundColor: #fff;
+$linkColor: #ad4c3f;
+$linkColorHover: lighten( $linkColor, 20% );
+$selectionBackgroundColor: rgba(79, 64, 28, 0.99);
+$heading1TextShadow: none;
+$headingTextTransform: none;
+$headingFontWeight: 700;
+
+$heading1Size: 1.60em;
+$heading2Size: 1.30em;
+$heading3Size: 1.15em;
+$heading4Size: 1.00em;
+
+$headingMargin: 0 0 1em 0;
+
+// Background generator
+@mixin bodyBackground() {
+	@include radial-gradient( rgba(255,255,255,1), rgba(255,255,255,1) );
+}
+
+
+
+// Theme template ------------------------------
+@import "../template/theme";
+// ---------------------------------------------
+
+.reveal .slides {
+    text-align: left
+}
+
+.reveal .progress {
+    height: 0.3em;
+    color: #d16262;
+    background-color: #832518;
+}
+
+// .present ul {
+//     list-style-position: outside;
+//     margin-left: 0;
+// }
+
+html,body{
+    width: 100%;
+    height: 100%;
+    margin: 0; /* Space from this element (entire page) and others*/
+    padding: 0; /*space from content and border*/
+    border-width: 20px;
+    overflow:hidden;
+    display:block;
+    box-sizing: border-box;
+}
+
+.reveal .slides section {
+	  top: 0!important;
+}
+
+.reveal .slides > section {
+    margin: 1em 0 1em 0;
+}
+
+.reveal .controls {
+    font-size: 6px;
+    bottom: 22px;
+    right: 30px;
+}
+
+// li {
+//     list-style-type: none;
+//     position: relative;    /* It is required for setting position to absolute in the next rule. */
+//     padding: 0.25em 0;
+// }
+
+// li::before {
+//     content: '\2022';      /* Unicode for • character */
+//     position: absolute;
+//     left: -0.8em;          /* Adjust this value so that it appears where you want. */
+//     font-size: 1em;      /* Adjust this value so that it appears what size you want. */
+// }
+
+
+
+.slide-background:before {
+    position: absolute;
+    content: "";
+    display: block;
+    background: url('../../logo.svg') left top no-repeat;
+    width: 220px;
+    height: 80px;
+    bottom: 15px;
+    right: 4em;
+    background-size: 220px 80px;
+    z-index: 9999;
+}
+
+.reveal pre {
+    box-shadow: none;
+    margin: 20px auto 20px 0;
+    font-size: 0.8em;
+    padding-left: 20px;
+    border-left: 3px solid #ccc;
+    font-family: monospace;
+}
+
+.reveal section img {
+    border: none;
+    box-shadow: none;
+}
+
+.reveal a:hover img {
+    box-shadow: none;
+}
