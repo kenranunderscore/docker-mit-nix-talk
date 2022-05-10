@@ -14,4 +14,5 @@ echo "           SERVICE LOGS           "
 echo "=================================="
 
 docker logs bob
+
 docker stop $(docker ps -a -q)
