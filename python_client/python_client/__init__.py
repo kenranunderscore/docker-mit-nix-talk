@@ -17,6 +17,7 @@ def main():
     demo(2, 183)
     demo(-5, 187)
     demo(17, -12)
+    demo(-5, 187)
 
 if __name__ == "__main__":
     main()
