@@ -4,7 +4,14 @@
 #+REVEAL_THEME: ./css/themes/active.css
 #+REVEAL_HLEVEL: 100
 #+REVEAL_TRANS: none
-#+OPTIONS: toc:nil reveal_center:nil H:4
+#+OPTIONS: toc:nil num:nil reveal_center:nil H:4
+
+* Ziel
+
+- Teaser für Nix
+
+FIXME Notes: keine Zeit für "was macht Nix, wie macht Nix was?", aber:
+welche (Docker-)Probleme löst es, wann sollte/kann man es einsetzen?
 
 * Ausgangssituation
 
@@ -46,7 +53,10 @@ Rel(goBackend, haskellBackend, "adds new results")
 @enduml
 #+end_src
 
-➜ Soll als Docker-Komposition aus drei Images ausgeliefert werden
+➜ Annahme: Soll als Docker-Komposition aus drei Images ausgeliefert
+  werden
+
+FIXME Notes: =./scripts/run...= zeigen
 
 * Anforderungen an Auslieferung
 
@@ -204,29 +214,43 @@ CMD [ "./haskell-backend" ]
 * Zweiter Versuch: Fazit
 
 - Probleme beim Erstellen des =Dockerfile=: Laufzeitabhängigkeiten
-  fehlen oder unpassend! *(Reproduzierbarkeit)*
+  fehlen oder unpassend! +*(Reproduzierbarkeit)*+
 - =alpine= nicht einfach möglich (=musl= vs. =libc=, andere
-  Bibliotheken/Versionen) *(Minimalität)*
+  Bibliotheken/Versionen) +*(Minimalität)*+
 - Anzahl Pinning-Mechanismen = Anzahl Tools, Sprachen
-  etc. (*Reproduzierbarkeit*)
+  etc. +*(Reproduzierbarkeit)*+
 
 FIXME Notes: Tools heißt nicht unbedingt "Zur Entwicklung". Sobald
 Docker verwendet wird, braucht man neue Tools. "Accelerate" -> freie
 Toolwahl macht produktiver
+- Dünnerer Pfad, Abweichen einfach, solange das Tooling es noch
+  zulässt
+
+* Zweiter Versuch: Fazit
 
 ➜ Gute Dockerfiles existieren, aber sie sind sehr schwer zu schreiben
 
 ➜ Je "besser" das Dockerfile, desto höher der Wartungsaufwand
 
+➜ Weicht i.d.R. von Entwicklungsumgebung ab (lokales Debugging?)
+
+* Abhängigkeitsmanagement
+
+➜ Trennung "Compile-Time" vs. Runtime (Multi-Stage Build)
+
+Was können wir tun?
+
 * Wunsch
 
 - Abhängigkeitsgraph(en) unserer Programme bekannt und fixiert
 
-* Bauen?
+FIXME Notes:
+- Kriegen Reproduzierbarkeit in den Griff: sowohl lokal als auch in
+  Docker
+- Minimalität: das minimale Docker-Image enthält die Anwendung + alle
+  Laufzeitabhängigkeiten
 
-FIXME
-
-* Laufen lassen?
+* Laufzeitabhängigkeiten des Caching-Service
 
 #+begin_src console
 $ ldd ~/path/to/haskell-backend
@@ -242,18 +266,62 @@ libffi.so.8 => /nix/store/gm6q7jmajjmnwd29wgbq2jm3x37vsw3h-libffi-3.4.2/lib/libf
 /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/ld-linux-x86-64.so.2 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib64/ld-linux-x86-64.so.2 (0x00007fb3b72e2000)
 #+end_src
 
+FIXME Notes:
+- feste Pfade, nicht =/lib=, =/usr/lib= etc.
+
 * Nix!
 
 https://nixos.org
 
-- Programmiersprache
 - Package-Manager für "Bauanleitungen" (sprachagnostisch)
-- (Betriebssystem)
+- Monorepo =nixos/nixpkgs=
+- Programmiersprache
+- (Betriebssystem: NixOS)
 
-TODO NIXKRAM, Bauanleitung zeigen, evtl. Diagramm mit Phasen, auch
-Patch zeigen!
+FIXME Notes:
+- Packages werden von tausenden Contributors gepflegt
 
-* =haskell_backend/default.nix=
+* Nix-Store
+
+- =/nix/store=: read-only-FS
+- Neue Version, neuer Hash, neuer Pfad
+- Store ist Cache
+
+FIXME Notes:
+- habe Bauanleitungen für alles
+- wenn ich weiß, was beteiligt ist, weiß ich, wenn sich ändert
+
+* Bauanleitungsbeispiel
+
+#+begin_src nix
+{ pkgs }:
+
+pkgs.stdenv.mkDerivation {
+  pname = "my-example";
+  version = "0.1.0";
+  src = ./.;
+  buildInputs = [ pkgs.gnumake pkgs.gcc ];
+  buildPhase = "make";
+  installPhase = ''
+    make install
+    cp -r myResult $out
+  '';
+}
+#+end_src
+
+FIXME Notes:
+- lazy und funktional, obskur (lazy -> bauen nur das, was wir brauchen)
+- Key-Value-Paare als Basiskonstrukt
+- =src= kann alles Mögliche sein, idR Ordner oder Archive
+- Bauvorgang ähnlich zu Docker-Build: "sandboxed", pure
+- =$out= Pfad in Store; Maschinerie hat Hash bereits erstellt (FIXME)
+
+* In der Praxis
+
+- =mkDerivation= low-level
+- DSLs für viele Programmiersprachen, Shell-Skripte etc.
+
+* Nixify it: Haskell-Service
 
 #+begin_src nix
 { pkgs ? import <nixpkgs> { } }:
@@ -261,7 +329,32 @@ Patch zeigen!
 pkgs.haskellPackages.callCabal2nix "haskell-backend" ./. { }
 #+end_src
 
-* =go_backend/default.nix=
+FIXME Notes:
+- =nix-build haskell_backend= zeigen
+- =touch haskell_backend/blub && ...=
+- Haskell-Pakete: idR eins pro Version gemirrort in =nixpkgs=
+
+* Nixify it: Haskell-Service
+
+Laufzeitabhängigkeiten revisited:
+
+#+begin_src shell
+store_path=$(nix-build haskell_backend | tail -n 1)
+echo $store_path
+
+nix-store -qR $store_path
+
+nix-store --export $(nix-store -qR $store_path) > closure
+#+end_src
+
+=closure= kann auf dem Zielsystem importiert werden.
+
+FIXME Notes:
+- Einfach mit Nix-Installation, oder wenn Nix das System
+  "kontrolliert"
+- Geht aber auch ohne Nix (nix-bundle, =nix bundle=)
+
+* Nixify it: Go-Service
 
 #+begin_src nix
 { pkgs ? import <nixpkgs> { } }:
@@ -274,7 +367,10 @@ pkgs.buildGoModule {
 }
 #+end_src
 
-* =python_client/default.nix=
+FIXME Notes:
+- Go hat eingebauten Vendoring-Mechanismus mit Pinning/Hash
+
+* Nixify it: Python-Client
 
 #+begin_src nix
 { pkgs ? import <nixpkgs> { } }:
@@ -285,20 +381,119 @@ in pkgs.writeShellScript "demo" ''
 ''
 #+end_src
 
-* Docker-Images mit Nix bauen
+* Docker-Images mit Nix?
 
 - Docker-Layers bestehen aus File-System-Diffs (OCI Image Format)
 - Kennen Abschluss nixifizierter Anwendungen
 
 ➜ Kennen auch das Diff
 
-* Neue Anforderung
+➜ Nix kann Docker-Images erzeugen
+
+FIXME Notes:
+- Wenn ich das kenne, muss ich nicht mehrere Layer anlegen; alles auf
+  einen Rutsch
+- geht auch ohne Docker-Installation -> super, wenn CI das Artefakt
+  erstellen soll/muss! (kein DinD, kein =docker build=, nur =nix=)
+
+* Dockerize it: Haskell-Service
+
+#+begin_src nix
+{ pkgs ? import <nixpkgs> { } }:
+
+let haskellBackend = import ../haskell_backend/default.nix { inherit pkgs; };
+in pkgs.dockerTools.buildImage {
+  name = "haskell-backend";
+  tag = "latest";
+  # contents = [ pkgs.bash pkgs.coreutils ];
+  config = {
+    # Start the Haskell service as the CMD of the image
+    Cmd = "${haskellBackend}/bin/haskell-backend";
+  };
+}
+#+end_src
+
+FIXME Notes:
+- Library =dockerTools=, Funktionen rund um Docker-Images
+- =config= wie in OCI-Spezifikation, =docker inspect=
+- Default: ein Layer, auch mit =contents=
+
+* Benutzung
+
+#+begin_src shell
+nix-build nix/haskell-docker-image.nix
+docker load < result
+#+end_src
+
+* Dockerize it: Go und Python
+
+😊
+
+FIXME Notes: =./scripts/run_nix_setup_separate_services.sh=
+
+* Ein Archiv für alles
+
+#+begin_src shell
+let
+  haskellBackend = import ./haskell-docker-image.nix { inherit pkgs; };
+  goBackend = import ./go-docker-image.nix { inherit pkgs; };
+  pythonDemo = import ./python-client-docker-image.nix { inherit pkgs; };
+in pkgs.dockerTools.mergeImages [ haskellBackend goBackend pythonDemo ]
+#+end_src
+
+* Neue "Anforderung"
 
 Beide Services in einem Image!
 
-FIXME =ldd=-Beispiel
+* Dockerfile?
 
-FIXME ...
+#+begin_src dockerfile
+FROM haskell@sha256:f99b7e5417f75089b53e1077a68c6333c48b82aff478a8af292a7b7f8e541832
+
+WORKDIR /build
+
+COPY haskell-backend.cabal ./
+COPY src-exe src-exe
+RUN cabal update && cabal install
+
+# Multi-stage build
+FROM ubuntu@sha256:26c68657ccce2cb0a31b330cb0be2b5e108d467f641c62e13ab40cbec258c68d
+
+RUN apt-get update && apt-get install -y zlib1g-dev
+
+# Benutzer und Gruppe anlegen
+RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1001 prod
+USER prod
+
+COPY --from=0 /root/.cabal/bin/haskell-backend ./
+CMD [ "./haskell-backend" ]
+#+end_src
+
+FIXME Notes:
+- Kopieren Binaries zusammen -> erhöhen Chance auf Probleme bei
+  Laufzeitabhängigkeiten
+- Beides parallel starten? -> Skript
+- Was, wenn beide Services gleiche Abh. in untersch. Versionen
+  brauchen??
+
+* Nix?
+
+#+begin_src nix
+let
+  haskellBackend = import ../haskell_backend { inherit pkgs; };
+  goBackend = import ../go_backend { inherit pkgs; };
+  runScript = pkgs.writeShellScript "run" ''
+    ${haskellBackend}/bin/haskell-backend &
+    ${goBackend}/bin/server
+  '';
+in pkgs.dockerTools.buildImage {
+  name = "both-backends";
+  tag = "latest";
+  config.Cmd = runScript;
+}
+#+end_src
+
+FIXME Notes: Image-Größen vergleichen: go-backend, haskell-backend, both-backends
 
 * Nix-Hürden
 
@@ -307,3 +502,9 @@ FIXME ...
 - Dokumentation
 - Bewegt sich sehr schnell
 - Große Unterschiede bei Sprachunterstützung
+
+* FIXME Themen, die noch fehlen
+
+- Caching
+- Pinning
+- Patching (eher nicht)

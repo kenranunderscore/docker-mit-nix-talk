@@ -25,6 +25,11 @@
     font-weight: var(--font-weight-builtin);
 }
 
+.org-nix-builtin {
+    color: var(--color-builtin);
+    font-weight: var(--font-weight-builtin);
+}
+
 .org-doc {
     color: var(--color-doc);
 }
@@ -55,6 +60,10 @@
     color: var(--color-constant);
 }
 
+.org-nix-constant {
+    color: var(--color-constant);
+}
+
 .org-preprocessor {
     color: var(--color-preprocessor);
 }
@@ -64,6 +73,10 @@
 }
 
 .org-variable-name {
+    color: var(--color-variable-name);
+}
+
+.org-nix-attribute {
     color: var(--color-variable-name);
 }
 

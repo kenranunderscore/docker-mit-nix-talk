@@ -38,8 +38,8 @@
 
           # We need Emacs and PlantUML to "build" presentations.
           buildInputs = let
-            emacs =
-              pkgs.emacsWithPackages (p: [ p.org-re-reveal p.dockerfile-mode ]);
+            emacs = pkgs.emacsWithPackages
+              (p: [ p.org-re-reveal p.dockerfile-mode p.nix-mode ]);
           in [ emacs pkgs.plantuml ];
 
           # Symlink the PlantUML C4 libraries to a local directory.
