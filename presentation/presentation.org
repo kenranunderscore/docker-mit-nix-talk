@@ -550,6 +550,10 @@ FIXME Notes:
 - Manche Sprachen/Build-Systeme funktionieren clashen mit Sandboxing
   -> impure
 
+* Beispielrepo + Folien
+
+- https://github.com/kenranunderscore/docker-mit-nix-talk
+
 * FIXME Themen, die noch fehlen
 
 - Caching
