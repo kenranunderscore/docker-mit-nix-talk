@@ -10,8 +10,11 @@
 
 - Teaser für Nix
 
-FIXME Notes: keine Zeit für "was macht Nix, wie macht Nix was?", aber:
-welche (Docker-)Probleme löst es, wann sollte/kann man es einsetzen?
+#+begin_notes
+- Keine Zeit für "was macht Nix, wie macht Nix, was es tut?"
+- Welche konkreten Docker-Probleme löst nix?
+- "Docker als Motivation für Nix"
+#+end_notes
 
 * Ausgangssituation
 
@@ -56,7 +59,9 @@ Rel(goBackend, haskellBackend, "adds new results")
 ➜ Annahme: Soll als Docker-Komposition aus drei Images ausgeliefert
   werden
 
-FIXME Notes: =./scripts/run...= zeigen
+#+begin_notes
+=./scripts/run_naive ...= hier zeigen
+#+end_notes
 
 * Anforderungen an Auslieferung
 
@@ -220,23 +225,32 @@ CMD [ "./haskell-backend" ]
 - Anzahl Pinning-Mechanismen = Anzahl Tools, Sprachen
   etc. +*(Reproduzierbarkeit)*+
 
-FIXME Notes: Tools heißt nicht unbedingt "Zur Entwicklung". Sobald
-Docker verwendet wird, braucht man neue Tools. "Accelerate" -> freie
-Toolwahl macht produktiver
+#+begin_notes
+- Tools bedeutet nicht unbedingt "zur Entwicklung"
+- Sobald Docker eingesetzt wird, muss man neue Tools beherrschen
+#+end_notes
+
 - Dünnerer Pfad, Abweichen einfach, solange das Tooling es noch
   zulässt
 
 * Zweiter Versuch: Fazit
 
-➜ Gute Dockerfiles existieren, aber sie sind sehr schwer zu schreiben
+➜ Gute Dockerfiles möglich, aber sehr schwer zu schreiben
 
 ➜ Je "besser" das Dockerfile, desto höher der Wartungsaufwand
 
 ➜ Weicht i.d.R. von Entwicklungsumgebung ab (lokales Debugging?)
 
+#+begin_notes
+- Sobald Docker eingesetzt wird, kommen idR min. 2 Tools hinzu, zB
+  Docker + Package-Manager
+- Dünnerer "Pfad" + viele Tools => leichteres Abweichen, solange die
+  Tools es zulassen
+#+end_notes
+
 * Abhängigkeitsmanagement
 
-➜ Trennung "Compile-Time" vs. Runtime (Multi-Stage Build)
+➜ "Compile-Time" vs. Runtime (Multi-Stage Build)
 
 Was können wir tun?
 
@@ -244,11 +258,12 @@ Was können wir tun?
 
 - Abhängigkeitsgraph(en) unserer Programme bekannt und fixiert
 
-FIXME Notes:
+#+begin_notes
 - Kriegen Reproduzierbarkeit in den Griff: sowohl lokal als auch in
   Docker
 - Minimalität: das minimale Docker-Image enthält die Anwendung + alle
   Laufzeitabhängigkeiten
+#+end_notes
 
 * Laufzeitabhängigkeiten des Caching-Service
 
@@ -266,8 +281,10 @@ libffi.so.8 => /nix/store/gm6q7jmajjmnwd29wgbq2jm3x37vsw3h-libffi-3.4.2/lib/libf
 /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/ld-linux-x86-64.so.2 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib64/ld-linux-x86-64.so.2 (0x00007fb3b72e2000)
 #+end_src
 
-FIXME Notes:
+#+begin_notes
+
 - feste Pfade, nicht =/lib=, =/usr/lib= etc.
+#+end_notes
 
 * Nix!
 
@@ -278,8 +295,9 @@ https://nixos.org
 - Programmiersprache
 - (Betriebssystem: NixOS)
 
-FIXME Notes:
+#+begin_notes
 - Packages werden von tausenden Contributors gepflegt
+#+end_notes
 
 * Nix-Store
 
@@ -287,9 +305,10 @@ FIXME Notes:
 - Neue Version, neuer Hash, neuer Pfad
 - Store ist Cache
 
-FIXME Notes:
+#+begin_notes
 - habe Bauanleitungen für alles
 - wenn ich weiß, was beteiligt ist, weiß ich, wenn sich ändert
+#+end_notes
 
 * Bauanleitungsbeispiel
 
@@ -309,12 +328,13 @@ pkgs.stdenv.mkDerivation {
 }
 #+end_src
 
-FIXME Notes:
+#+begin_notes
 - lazy und funktional, obskur (lazy -> bauen nur das, was wir brauchen)
 - Key-Value-Paare als Basiskonstrukt
 - =src= kann alles Mögliche sein, idR Ordner oder Archive
 - Bauvorgang ähnlich zu Docker-Build: "sandboxed", pure
 - =$out= Pfad in Store; Maschinerie hat Hash bereits erstellt (FIXME)
+#+end_notes
 
 * In der Praxis
 
@@ -329,10 +349,11 @@ FIXME Notes:
 pkgs.haskellPackages.callCabal2nix "haskell-backend" ./. { }
 #+end_src
 
-FIXME Notes:
+#+begin_notes
 - =nix-build haskell_backend= zeigen
 - =touch haskell_backend/blub && ...=
 - Haskell-Pakete: idR eins pro Version gemirrort in =nixpkgs=
+#+end_notes
 
 * Nixify it: Haskell-Service
 
@@ -349,28 +370,24 @@ nix-store --export $(nix-store -qR $store_path) > closure
 
 =closure= kann auf dem Zielsystem importiert werden.
 
-FIXME Notes:
+#+begin_notes
 - Einfach mit Nix-Installation, oder wenn Nix das System
   "kontrolliert"
 - Geht aber auch ohne Nix (nix-bundle, =nix bundle=)
+#+end_notes
 
-* Nixify it: Go-Service
+* Nixify it: Go-Service und Python-Client
 
 #+begin_src nix
 { pkgs ? import <nixpkgs> { } }:
 
 pkgs.buildGoModule {
-  src = pkgs.lib.cleanSource ./.;
+  src = ./.;
   pname = "go_backend";
   version = "0.1.0";
   vendorSha256 = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
 }
 #+end_src
-
-FIXME Notes:
-- Go hat eingebauten Vendoring-Mechanismus mit Pinning/Hash
-
-* Nixify it: Python-Client
 
 #+begin_src nix
 { pkgs ? import <nixpkgs> { } }:
@@ -381,6 +398,10 @@ in pkgs.writeShellScript "demo" ''
 ''
 #+end_src
 
+#+begin_notes
+- Go hat eingebauten Vendoring-Mechanismus mit Pinning/Hash
+#+end_notes
+
 * Docker-Images mit Nix?
 
 - Docker-Layers bestehen aus File-System-Diffs (OCI Image Format)
@@ -390,11 +411,12 @@ in pkgs.writeShellScript "demo" ''
 
 ➜ Nix kann Docker-Images erzeugen
 
-FIXME Notes:
+#+begin_notes
 - Wenn ich das kenne, muss ich nicht mehrere Layer anlegen; alles auf
   einen Rutsch
 - geht auch ohne Docker-Installation -> super, wenn CI das Artefakt
   erstellen soll/muss! (kein DinD, kein =docker build=, nur =nix=)
+#+end_notes
 
 * Dockerize it: Haskell-Service
 
@@ -413,10 +435,11 @@ in pkgs.dockerTools.buildImage {
 }
 #+end_src
 
-FIXME Notes:
+#+begin_notes
 - Library =dockerTools=, Funktionen rund um Docker-Images
 - =config= wie in OCI-Spezifikation, =docker inspect=
 - Default: ein Layer, auch mit =contents=
+#+end_notes
 
 * Benutzung
 
@@ -429,21 +452,18 @@ docker load < result
 
 😊
 
-FIXME Notes: =./scripts/run_nix_setup_separate_services.sh=
-
-* Ein Archiv für alles
-
-#+begin_src shell
-let
-  haskellBackend = import ./haskell-docker-image.nix { inherit pkgs; };
-  goBackend = import ./go-docker-image.nix { inherit pkgs; };
-  pythonDemo = import ./python-client-docker-image.nix { inherit pkgs; };
-in pkgs.dockerTools.mergeImages [ haskellBackend goBackend pythonDemo ]
-#+end_src
+#+begin_notes
+Zeigen: =./scripts/run_nix_setup_separate_services.sh=
+#+end_notes
 
 * Neue "Anforderung"
 
 Beide Services in einem Image!
+
+#+begin_notes
+- Realbeispiel (wenn auch sinnlos)
+- Zeigt Flexibilität gegenüber Docker selbst
+#+end_notes
 
 * Dockerfile?
 
@@ -469,12 +489,13 @@ COPY --from=0 /root/.cabal/bin/haskell-backend ./
 CMD [ "./haskell-backend" ]
 #+end_src
 
-FIXME Notes:
+#+begin_notes
 - Kopieren Binaries zusammen -> erhöhen Chance auf Probleme bei
   Laufzeitabhängigkeiten
 - Beides parallel starten? -> Skript
 - Was, wenn beide Services gleiche Abh. in untersch. Versionen
   brauchen??
+#+end_notes
 
 * Nix?
 
@@ -493,13 +514,31 @@ in pkgs.dockerTools.buildImage {
 }
 #+end_src
 
-FIXME Notes: Image-Größen vergleichen: go-backend, haskell-backend, both-backends
+#+begin_notes
+- Image-Größen vergleichen
+  - =docker images | grep haskell-backend=
+  - =docker images | grep go-backend=
+  - =docker images | grep haskell-backend=
 - Nicht mal Tools wie =ls= enthalten
+#+end_notes
 
 * War's das?
 * War's das?
 
 - Minimal
+
+* War's das?
+
+- Minimal ✓
+
+* War's das?
+
+- Minimal ✓
+- Reproduzierbar
+
+* War's das?
+
+- Minimal ✓
 - +Reproduzierbar+ Pinning fehlt!
 
 * Nixpkgs pinnen
@@ -529,13 +568,14 @@ in ...
 - Reproduzierbare (Entwicklungs-)Umgebungen (=nix-shell=) analog
 - Riesige und hilfsbereite Community
 
-FIXME Notes:
+#+begin_notes
 - Auf Änderungen an Gegebenheiten schnell reagieren
 - Einfachere CI ohne Docker/DinD
 - Einheitlich: selbe Befehle in CI wie auch lokal
 - Trotzdem mehrere Tools in Dev nötig natürlich
 - Sind alles Vorteile von Nix, nicht von "Docker mit Nix" ->
   Docker-Images sind Nebenprodukt
+#+end_notes
 
 * Nix-Hürden
 
@@ -545,10 +585,10 @@ FIXME Notes:
 - Ökosystem bewegt sich sehr schnell
 - Große Unterschiede bei Sprachunterstützung
 
-FIXME Notes:
-- abwägen, wann es sich lohnt, das einzusetzen
-- Manche Sprachen/Build-Systeme funktionieren clashen mit Sandboxing
-  -> impure
+#+begin_notes
+- Abwägen, wann es sich lohnt, das einzusetzen
+- Manche Sprachen/Build-Systeme clashen mit Sandboxing -> impure
+#+end_notes
 
 * Beispielrepo + Folien
 
@@ -558,3 +598,4 @@ FIXME Notes:
 
 - Caching
 - Patching (eher nicht)
+- Sandboxing erwähnen/erklären
