@@ -7,7 +7,7 @@ all: $(HTML)
 .PHONY: all
 
 %.html: %.org
-	emacs --batch -q -l export.el --eval='(org-re-reveal-export-file  "$<" "$(REVEAL_ROOT)" "$(REVEAL_MATHJAX_URL)")'
+	nix develop -c emacs --batch -q -l export.el --eval='(org-re-reveal-export-file  "$<" "$(REVEAL_ROOT)" "$(REVEAL_MATHJAX_URL)")'
 
 %.pdf: %.html
 	nix run --no-sandbox .#decktape -- -s 1920x1080 --chrome-path $(CHROME) "$<" "$@"
