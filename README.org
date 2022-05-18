@@ -10,5 +10,5 @@ Talk in
 - [[file:go_backend/]]
 
 Die Folien befinden sich in [[file:presentation/]] in Form einer
-Nix-Flake.  Um sie zu bauen, genügt es, dort =nix develop -c make=
-auszuführen.
+Nix-Flake.  Um sie zu bauen, genügt es, dort =make= auszuführen.  Sie
+liegen dort allerdings auch [[file:presentation/presentation.pdf][als PDF]].
