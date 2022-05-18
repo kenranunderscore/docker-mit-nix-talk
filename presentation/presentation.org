@@ -111,6 +111,8 @@ CMD cabal run
 
 * Zweiter Versuch
 
+#+REVEAL_HTML: <div style="font-size: 80%;">
+
 #+begin_src dockerfile
 FROM haskell@sha256:f99b7e5417f75089b53e1077a68c6333c48b82aff478a8af292a7b7f8e541832
 
@@ -133,7 +135,7 @@ COPY --from=0 /root/.cabal/bin/haskell-backend ./
 CMD [ "./haskell-backend" ]
 #+end_src
 
-Wie ist es nun?
+#+REVEAL_HTML: </div>
 
 * Zweiter Versuch: Analyse
 
@@ -228,10 +230,9 @@ CMD [ "./haskell-backend" ]
 #+begin_notes
 - Tools bedeutet nicht unbedingt "zur Entwicklung"
 - Sobald Docker eingesetzt wird, muss man neue Tools beherrschen
-#+end_notes
-
 - Dünnerer Pfad, Abweichen einfach, solange das Tooling es noch
   zulässt
+#+end_notes
 
 * Zweiter Versuch: Fazit
 
@@ -358,6 +359,8 @@ nix-store --export $(nix-store -qR $store_path) > closure
 
 * Laufzeitabhängigkeiten des Caching-Service
 
+#+REVEAL_HTML: <div style="font-size: 60%;">
+
 #+begin_src console
 $ docker run --rm -it haskell-backend-1 ldd haskell-backend
 linux-vdso.so.1 (0x00007ffc46f88000)
@@ -372,7 +375,11 @@ libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fee89b72000)
 /lib64/ld-linux-x86-64.so.2 (0x00007fee89f39000)
 #+end_src
 
+#+REVEAL_HTML: </div>
+
 * Laufzeitabhängigkeiten des Caching-Service
+
+#+REVEAL_HTML: <div style="font-size: 60%;">
 
 #+begin_src console
 $ ldd ~/path/to/haskell-backend
@@ -387,6 +394,8 @@ libdl.so.2 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/lib
 libffi.so.8 => /nix/store/gm6q7jmajjmnwd29wgbq2jm3x37vsw3h-libffi-3.4.2/lib/libffi.so.8 (0x00007fb3b6f2b000)
 /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/ld-linux-x86-64.so.2 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib64/ld-linux-x86-64.so.2 (0x00007fb3b72e2000)
 #+end_src
+
+#+REVEAL_HTML: </div>
 
 * Docker-Images mit Nix?
 
@@ -605,9 +614,3 @@ in ...
 * Beispielrepo + Folien
 
 - https://github.com/kenranunderscore/docker-mit-nix-talk
-
-* FIXME Themen, die noch fehlen
-
-- Caching
-- Patching (eher nicht)
-- Sandboxing erwähnen/erklären
