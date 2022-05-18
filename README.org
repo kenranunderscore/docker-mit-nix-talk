@@ -1,6 +1,12 @@
 #+title: Try it, use it, build it, patch it, cache it, pin it, dockerize it
 
 * Docker mit Nix
+
+** Voraussetzungen
+
+Um die Nix-Parts auszuprobieren, benötigt man eine [[https://nixos.org/download.html#download-nix][Nix-Installation]].
+Zum Laufenlassen der Services braucht man Docker.
+
 ** Beispielprojekt
 
 Dieses Repository enthält den lauffähigen Beispielcode zum obigen
@@ -9,8 +15,6 @@ Talk in
 - [[file:haskell_backend]]
 - [[file:python_client]]
 - [[file:go_backend]]
-
-Um den Nix-Part auszuprobieren, benötigt man eine [[https://nixos.org/download.html#download-nix][Nix-Installation]].
 
 Im Ordner [[file:scripts]] befinden sich Skripte zum Starten der
 verschiedenen "Setups" der Demo (Naives Docker-Setup,
@@ -23,6 +27,7 @@ können ebenfalls via =nix-build nix/<path>.nix= gebaut werden.
 
 ** Folien
 
-Die Folien befinden sich in [[file:presentation]] in Form einer
-Nix-Flake.  Um sie zu bauen, genügt es, dort =make= auszuführen.  Sie
-liegen dort allerdings auch [[file:presentation/presentation.pdf][als PDF]].
+Die Folien befinden sich in [[file:presentation]] in Form einer Nix-Flake.
+Um sie zu bauen, genügt es, dort =make= auszuführen (Achtung: das
+[[https://nixos.wiki/wiki/Flakes#Non-NixOS][Flakes-Feature muss eingeschaltet sein]]).  Sie liegen dort allerdings
+auch [[file:presentation/presentation.pdf][als PDF]].
