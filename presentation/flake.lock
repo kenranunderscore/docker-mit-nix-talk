@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "decktape": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1649834697,
+        "narHash": "sha256-Ts88xkVTAKck7BTmQlEBQDxMKtUKu+rEgDxskyCMH+w=",
+        "owner": "astefanutti",
+        "repo": "decktape",
+        "rev": "d02e9f2c6fb7b6aa6a22d4b77f9259543a628f9c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "astefanutti",
+        "repo": "decktape",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "locked": {
         "lastModified": 1649676176,
@@ -81,6 +97,7 @@
     },
     "root": {
       "inputs": {
+        "decktape": "decktape",
         "flake-utils": "flake-utils",
         "mathjax": "mathjax",
         "nixpkgs": "nixpkgs",

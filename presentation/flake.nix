@@ -16,6 +16,10 @@
       url = "github:plantuml-stdlib/c4-plantuml";
       flake = false;
     };
+    decktape = {
+      url = "github:astefanutti/decktape";
+      flake = false;
+    };
   };
 
   outputs = inputs@{ self, nixpkgs, flake-utils, ... }:
@@ -28,6 +32,21 @@
     in flake-utils.lib.eachSystem supportedSystems (system:
       let pkgs = import nixpkgs { inherit system; };
       in {
+        apps.decktape = let
+          decktapeWithDependencies = pkgs.stdenv.mkDerivation {
+            name = "decktape-with-dependencies";
+            src = inputs.decktape;
+            buildInputs = [ pkgs.nodejs ];
+            buildPhase = "HOME=$TMP npm install";
+            installPhase = "cp -r . $out";
+          };
+          app = pkgs.writeShellScript "run-decktape"
+            "${pkgs.nodejs}/bin/node ${decktapeWithDependencies}/decktape.js $@";
+        in {
+          type = "app";
+          program = "${app}";
+        };
+
         # A development shell in which it's possible to build/develop
         # the presentation.
         devShells.default = pkgs.mkShell {
