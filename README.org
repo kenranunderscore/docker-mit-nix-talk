@@ -1,14 +1,28 @@
 #+title: Try it, use it, build it, patch it, cache it, pin it, dockerize it
 
 * Docker mit Nix
+** Beispielprojekt
 
 Dieses Repository enthält den lauffähigen Beispielcode zum obigen
 Talk in
 
-- [[file:haskell_backend/]]
-- [[file:python_client/]]
-- [[file:go_backend/]]
+- [[file:haskell_backend]]
+- [[file:python_client]]
+- [[file:go_backend]]
 
-Die Folien befinden sich in [[file:presentation/]] in Form einer
+Um den Nix-Part auszuprobieren, benötigt man eine [[https://nixos.org/download.html#download-nix][Nix-Installation]].
+
+Im Ordner [[file:scripts]] befinden sich Skripte zum Starten der
+verschiedenen "Setups" der Demo (Naives Docker-Setup,
+Nix-Release-Setup, ...).
+
+Die einzelnen Bestandteile können mit Nix direkt gebaut werden,
+bspw. erstellt =nix-build haskell_backend= den Caching-Service.  Die
+Nix-Expressions für die Docker-Images befinden sich in [[file:nix]] und
+können ebenfalls via =nix-build nix/<path>.nix= gebaut werden.
+
+** Folien
+
+Die Folien befinden sich in [[file:presentation]] in Form einer
 Nix-Flake.  Um sie zu bauen, genügt es, dort =make= auszuführen.  Sie
 liegen dort allerdings auch [[file:presentation/presentation.pdf][als PDF]].
