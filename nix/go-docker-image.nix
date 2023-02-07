@@ -9,8 +9,6 @@ in pkgs.dockerTools.buildImage {
   tag = "latest";
   # Impure: it changes the timestamp every time a rebuild is needed.
   # created = "now";
-  # For debugging this is sometimes nice/necessary:
-  contents = [ pkgs.bash pkgs.coreutils ];
   config = {
     # Start the Go service as the CMD of the image
     Cmd = "${goBackend}/bin/server";
