@@ -1,4 +1,4 @@
-#+title: Try it, use it, build it, patch it, cache it, pin it, dockerize it
+#+title: Nix geht über Docker
 #+author: Johannes Maier
 #+REVEAL_PLUGINS: (notes)
 #+REVEAL_THEME: ./css/themes/active.css
