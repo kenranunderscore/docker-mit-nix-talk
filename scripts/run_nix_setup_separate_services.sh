@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "$(dirname $0)"
+cd "$(dirname "$0")" || exit
 
 nix-build ../nix/haskell-docker-image.nix
 docker load < result
@@ -22,4 +22,4 @@ docker logs gob
 echo ""
 docker logs hab
 
-docker stop $(docker ps -a -q)
+docker stop "$(docker ps -a -q)"

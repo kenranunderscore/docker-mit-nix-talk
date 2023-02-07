@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "$(dirname $0)"
+cd "$(dirname "$0")" || exit
 
 docker build -t go-backend-0 ../go_backend
 docker build -t haskell-backend-0 ../haskell_backend
@@ -19,4 +19,4 @@ docker logs gob
 echo ""
 docker logs hab
 
-docker stop $(docker ps -a -q)
+docker stop "$(docker ps -a -q)"

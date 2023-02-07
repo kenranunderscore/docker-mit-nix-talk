@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd "$(dirname $0)"
+cd "$(dirname "$0")" || exit
 
 nix-build ../nix/docker-release.nix
 docker load < result
@@ -15,4 +15,4 @@ echo "=================================="
 
 docker logs bob
 
-docker stop $(docker ps -a -q)
+docker stop "$(docker ps -a -q)"
