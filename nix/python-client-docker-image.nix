@@ -6,6 +6,6 @@ in pkgs.dockerTools.buildImage {
   tag = "latest";
   config = {
     # Start the python demo client as the CMD of the image
-    Cmd = demo;
+    Cmd = "${demo}/bin/demo";
   };
 }
