@@ -459,10 +459,10 @@ pkgs.buildGoModule {
 #+begin_src nix
 { pkgs ? import <nixpkgs> { } }:
 
-let myPython = pkgs.python310.withPackages (p: [ p.loguru p.requests ]);
-in pkgs.writeShellScript "demo" ''
-  ${myPython}/bin/python ${./python_client}/__init__.py
-''
+pkgs.poetry2nix.mkPoetryApplication {
+  projectDir = ./.;
+  python = pkgs.python310;
+}
 #+end_src
 
 #+begin_notes
