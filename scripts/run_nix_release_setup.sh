@@ -2,7 +2,7 @@
 
 cd "$(dirname "$0")" || exit
 
-nix-build ../nix/docker-release.nix
+nix build .#release
 docker load < result
 
 docker run --rm --name bob -t -d --network host both-backends

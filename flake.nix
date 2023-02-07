@@ -36,6 +36,42 @@
     in flake-utils.lib.eachSystem supportedSystems (system:
       let pkgs = import nixpkgs { inherit system; };
       in {
+        # A development shell for this talk/project.  Enter via
+        # `nix develop`.
+        devShells.default = pkgs.mkShell {
+          nativeBuildInputs = with pkgs; [
+            # Go
+            go
+            # Python
+            python310
+            poetry
+            # Haskell
+            ghc
+            cabal-install
+            # Libraries needed at runtime (not necessary when using
+            # Nix to the fullest, i.e., using the Haskell packages
+            # that are "nixified" and thus come with all their
+            # transitive dependencies included)
+            zlib
+          ];
+        };
+
+        # The packages we can build; this includes the docker images.
+        packages = {
+          goBackend = import ./nix/go-docker-image.nix { inherit pkgs; };
+          haskellBackend =
+            import ./nix/haskell-docker-image.nix { inherit pkgs; };
+          pythonClient =
+            import ./nix/python-client-docker-image.nix { inherit pkgs; };
+          allBackendsInOne =
+            import ./nix/all-backends-in-one.nix { inherit pkgs; };
+          release = import ./nix/docker-release.nix { inherit pkgs; };
+        };
+
+        # The stuff below is a template I've created to produce the
+        # reveal.js slides from a .org file, as well as the PDF
+        # conversion.  It has nothing to do with the actual demo
+        # project.
         apps = {
           # The default target for `nix run`.  This builds the
           # reveal.js slides.
@@ -68,8 +104,8 @@
             program = "${app}";
           };
 
-          # May be used to create the PDF version of the talk.  See the
-          # Makefile for an actual invocation.
+          # May be used to create the PDF version of the talk.  See
+          # the presentation's Makefile for an actual invocation.
           decktape = let
             decktapeWithDependencies = pkgs.stdenv.mkDerivation {
               name = "decktape-with-dependencies";
@@ -90,5 +126,6 @@
             program = "${poppler}/bin/pdfunite";
           };
         };
+
       });
 }

@@ -2,11 +2,13 @@
 
 cd "$(dirname "$0")" || exit
 
-nix-build ../nix/haskell-docker-image.nix
+nix build .#haskellBackend
 docker load < result
-nix-build ../nix/python-client-docker-image.nix
+
+nix build .#goBackend
 docker load < result
-nix-build ../nix/go-docker-image.nix
+
+nix build .#pythonClient
 docker load < result
 
 # Backends

@@ -4,8 +4,9 @@
 
 ** Voraussetzungen
 
-Um die Nix-Parts auszuprobieren, benötigt man eine [[https://nixos.org/download.html#download-nix][Nix-Installation]].
-Zum Laufenlassen der Services braucht man Docker.
+Um die Nix-Parts auszuprobieren, benötigt man eine [[https://nixos.org/download.html#download-nix][Nix-Installation]]
+(mit Flakes "eingeschaltet", siehe [[Folien]]).  Zum Laufenlassen der Services braucht
+man Docker.
 
 ** Beispielprojekt
 
@@ -25,9 +26,22 @@ bspw. erstellt =nix-build haskell_backend= den Caching-Service.  Die
 Nix-Expressions für die Docker-Images befinden sich in [[file:nix]] und
 können ebenfalls via =nix-build nix/<path>.nix= gebaut werden.
 
+Alternativ funktioniert auch die "neue" Nix-CLI, bspw.
+
+#+begin_src shell
+nix build .#release
+nix build .#haskellBackend
+...
+#+end_src
+
+Siehe hierzu die Skripte, die bereits umgestellt wurden.  Der
+eingebaute Pinning-Mechanismus von Nix-Flakes sorgt hier für die
+Reproduzierbarkeit, während die =nix-build=-Befehle den globalen
+Nix-Channel =nixpkgs= auf dem Host-System erwarten.
+
 ** Folien
 
 Die Folien befinden sich in [[file:presentation]] in Form einer Nix-Flake.
-Um sie zu bauen, genügt es, dort =make= auszuführen (Achtung: das
-[[https://nixos.wiki/wiki/Flakes#Non-NixOS][Flakes-Feature muss eingeschaltet sein]]).  Sie liegen dort allerdings
-auch [[file:presentation/presentation.pdf][als PDF]].
+Um sie zu bauen, genügt es, dort =make= auszuführen (Achtung: auch hier
+muss das [[https://nixos.wiki/wiki/Flakes#Non-NixOS][Flakes-Feature eingeschaltet sein]]).  Sie liegen dort
+allerdings auch [[file:presentation/presentation.pdf][als PDF]].
