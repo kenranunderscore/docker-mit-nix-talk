@@ -16,6 +16,10 @@
       url = "github:plantuml-stdlib/c4-plantuml";
       flake = false;
     };
+    plantumlEIP = {
+      url = "github:plantuml-stdlib/EIP-PlantUML";
+      flake = false;
+    };
     decktape = {
       url = "github:astefanutti/decktape";
       flake = false;
@@ -32,44 +36,59 @@
     in flake-utils.lib.eachSystem supportedSystems (system:
       let pkgs = import nixpkgs { inherit system; };
       in {
-        apps.decktape = let
-          decktapeWithDependencies = pkgs.stdenv.mkDerivation {
-            name = "decktape-with-dependencies";
-            src = inputs.decktape;
-            buildInputs = [ pkgs.nodejs ];
-            buildPhase = "HOME=$TMP npm install";
-            installPhase = "cp -r . $out";
+        apps = {
+          # The default target for `nix run`.  This builds the
+          # reveal.js slides.
+          default = let
+            emacs = pkgs.emacs.pkgs.withPackages (p: [
+              p.org-re-reveal
+              p.gnuplot
+              p.gnuplot-mode
+              p.dockerfile-mode
+              p.nix-mode
+            ]);
+            app = pkgs.writeShellScript "org-re-reveal" ''
+              if [ ! -e plantuml/plugins ]; then
+                mkdir -p plantuml/plugins
+                ln -snf ${inputs.plantumlC4}/*.puml plantuml/plugins/.
+                echo Symlinked PlantUML C4 to ./plantuml/plugins
+                ln -snf ${inputs.plantumlEIP}/dist/*.puml plantuml/plugins/.
+                echo Symlinked PlantUML EIP to ./plantuml/plugins
+              fi
+
+              export REVEAL_ROOT="${inputs.revealjs}"
+              export REVEAL_MATHJAX_URL=
+              export PATH=${pkgs.plantuml}/bin:${pkgs.gnuplot}/bin:$PATH
+              echo $@
+              ${emacs}/bin/emacs --batch -q -l export.el \
+                  --eval="(org-re-reveal-export-file \"$@\" \"${inputs.revealjs}\" \"${inputs.mathjax}/es5/tex-chtml.js\")"
+            '';
+          in {
+            type = "app";
+            program = "${app}";
           };
-          app = pkgs.writeShellScript "run-decktape"
-            "${pkgs.nodejs}/bin/node ${decktapeWithDependencies}/decktape.js $@";
-        in {
-          type = "app";
-          program = "${app}";
-        };
 
-        # A development shell in which it's possible to build/develop
-        # the presentation.
-        devShells.default = pkgs.mkShell {
-          # Environment variables pointing to reveal.js and MathJax
-          # inside the Nix store.
-          REVEAL_ROOT = "${inputs.revealjs}";
-          REVEAL_MATHJAX_URL = "${inputs.mathjax}/es5/tex-chtml.js";
-
-          # We need Emacs and PlantUML to "build" presentations.
-          buildInputs = let
-            emacs = pkgs.emacsWithPackages
-              (p: [ p.org-re-reveal p.dockerfile-mode p.nix-mode ]);
-          in [ emacs pkgs.plantuml ];
-
-          # Symlink the PlantUML C4 libraries to a local directory.
-          # TODO: regenerate the symlink if the lock (and thus the
-          # store path) changes.
-          shellHook = ''
-            if [ ! -e plantuml/plugins ]; then
-              ln -snf ${inputs.plantumlC4} plantuml/plugins
-              echo Symlinked PlantUML C4 to ./plantuml/plugins
-            fi
-          '';
+          # May be used to create the PDF version of the talk.  See the
+          # Makefile for an actual invocation.
+          decktape = let
+            decktapeWithDependencies = pkgs.stdenv.mkDerivation {
+              name = "decktape-with-dependencies";
+              src = inputs.decktape;
+              buildInputs = [ pkgs.nodejs ];
+              buildPhase = "HOME=$TMP npm install";
+              installPhase = "cp -r . $out";
+            };
+            app = pkgs.writeShellScript "run-decktape"
+              "${pkgs.nodejs}/bin/node ${decktapeWithDependencies}/decktape.js $@";
+          in {
+            type = "app";
+            program = "${app}";
+          };
+          pdfunite = let poppler = pkgs.poppler_utils;
+          in {
+            type = "app";
+            program = "${poppler}/bin/pdfunite";
+          };
         };
       });
 }

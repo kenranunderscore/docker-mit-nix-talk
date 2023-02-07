@@ -2,6 +2,9 @@
 (require 'org-re-reveal)
 (require 'htmlize)
 
+(require 'dockerfile-mode)
+(require 'nix-mode)
+
 (org-babel-do-load-languages
  'org-babel-load-languages '((plantuml . t)))
 (setq org-confirm-babel-evaluate nil)
