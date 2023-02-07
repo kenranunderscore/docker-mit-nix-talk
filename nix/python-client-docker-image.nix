@@ -5,7 +5,7 @@ in pkgs.dockerTools.buildImage {
   name = "python-demo";
   tag = "latest";
   config = {
-    # Start the Go service as the CMD of the image
+    # Start the python demo client as the CMD of the image
     Cmd = demo;
   };
 }
