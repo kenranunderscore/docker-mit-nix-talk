@@ -18,7 +18,7 @@ pdf: $(PDF)
 # Use a specific window size to work around this issue:
 # https://github.com/astefanutti/decktape/issues/151
 %.pdf: %.html
-	nix run .#decktape -- -s 2048x1536 $(MAYBE_CHROME_PATH) "$<" "$@"
+	nix run --no-sandbox .#decktape -- -s 2048x1536 $(MAYBE_CHROME_PATH) "$<" "$@"
 
 one-pdf: $(ONEPDF)
 .PHONY: one-pdf
