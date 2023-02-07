@@ -14,9 +14,10 @@ docker run --rm -it --network host python-client-0
 echo "=================================="
 echo "           SERVICE LOGS           "
 echo "=================================="
+echo
 
 docker logs gob
-echo ""
+echo
 docker logs hab
 
-docker stop "$(docker ps -a -q)"
+docker stop $(docker ps -a -q) >/dev/null

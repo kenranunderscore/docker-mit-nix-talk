@@ -9,7 +9,7 @@ ONEPDF=all-slides.pdf
 all: $(HTML)
 .PHONY: all
 
-%.html: %.org flake.nix
+%.html: %.org
 	nix run .# -- "$<"
 
 pdf: $(PDF)
