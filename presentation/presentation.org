@@ -93,8 +93,57 @@ Probleme?
 # Basisimage nicht gepinnt -> Reproduzierbarkeit
 FROM ubuntu
 
+COPY . .
+RUN apt-get update
+RUN apt-get install -y cabal-install zlib1g-dev
+RUN cabal update
+RUN cabal build
+CMD cabal run
+#+end_src
+
+* Dockerfile des Caching-Service
+
+#+begin_src dockerfile
+# Basisimage nicht gepinnt -> Reproduzierbarkeit
+FROM ubuntu
+
 # Zu früh -> zerstört Caching
 COPY . .
+RUN apt-get update
+RUN apt-get install -y cabal-install zlib1g-dev
+RUN cabal update
+RUN cabal build
+CMD cabal run
+#+end_src
+
+* Dockerfile des Caching-Service
+
+#+begin_src dockerfile
+# Basisimage nicht gepinnt -> Reproduzierbarkeit
+FROM ubuntu
+
+# Zu früh -> zerstört Caching
+COPY . .
+
+# - Wird einzeln gecacht, daher bei Änderungen danach nicht neu ausgeführt
+# - Reproduzierbarkeit unmöglich
+RUN apt-get update
+RUN apt-get install -y cabal-install zlib1g-dev
+
+RUN cabal update
+RUN cabal build
+CMD cabal run
+#+end_src
+
+* Dockerfile des Caching-Service
+
+#+begin_src dockerfile
+# Basisimage nicht gepinnt -> Reproduzierbarkeit
+FROM ubuntu
+
+# Zu früh -> zerstört Caching
+COPY . .
+
 # - Wird einzeln gecacht, daher bei Änderungen danach nicht neu ausgeführt
 # - Reproduzierbarkeit unmöglich
 RUN apt-get update
@@ -103,6 +152,50 @@ RUN apt-get install -y cabal-install zlib1g-dev
 # S.o.
 RUN cabal update
 RUN cabal build
+
+CMD cabal run
+#+end_src
+
+* Dockerfile des Caching-Service
+
+#+begin_src dockerfile
+# Basisimage nicht gepinnt -> Reproduzierbarkeit
+FROM ubuntu
+
+# Zu früh -> zerstört Caching
+COPY . .
+
+# - Wird einzeln gecacht, daher bei Änderungen danach nicht neu ausgeführt
+# - Reproduzierbarkeit unmöglich
+RUN apt-get update
+RUN apt-get install -y cabal-install zlib1g-dev
+
+# S.o.
+RUN cabal update
+RUN cabal build
+
+# Hier sollte das gebaute Binary laufen und cabal unnötig sein
+CMD cabal run
+#+end_src
+
+* Dockerfile des Caching-Service
+
+#+begin_src dockerfile
+# Basisimage nicht gepinnt -> Reproduzierbarkeit
+FROM ubuntu
+
+# Zu früh -> zerstört Caching
+COPY . .
+
+# - Wird einzeln gecacht, daher bei Änderungen danach nicht neu ausgeführt
+# - Reproduzierbarkeit unmöglich
+RUN apt-get update
+RUN apt-get install -y cabal-install zlib1g-dev
+
+# S.o.
+RUN cabal update
+RUN cabal build
+
 # Hier sollte das gebaute Binary laufen und cabal unnötig sein
 CMD cabal run
 #+end_src
