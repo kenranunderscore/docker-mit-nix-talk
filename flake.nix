@@ -42,6 +42,7 @@
           nativeBuildInputs = with pkgs; [
             # Go
             go
+            gopls
             # Python
             python310
             poetry
