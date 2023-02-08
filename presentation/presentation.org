@@ -342,20 +342,7 @@ CMD [ "./haskell-backend" ]
   Tools es zulassen
 #+end_notes
 
-* Abhängigkeitsmanagement
-
-Wunsch:
-
-- Abhängigkeitsgraph(en) unserer Programme bekannt und fixiert
-
-#+begin_notes
-- Kriegen Reproduzierbarkeit in den Griff: sowohl lokal als auch in
-  Docker
-- Wir schauen mal, wo wir landen; Minimalitaet spaeter
-- Toll, falls moeglichst wenige Tools eingesetzt werden muessen
-#+end_notes
-
-* Nix!
+* Abhängigkeitsmanagement mit Nix!
 
 https://nixos.org
 
@@ -364,8 +351,14 @@ https://nixos.org
 - Programmiersprache
 - (Betriebssystem: NixOS)
 
+=> Abhängigkeitsgraph(en) unserer Programme bekannt und fixiert
+
 #+begin_notes
 - Packages werden von tausenden Contributors gepflegt
+- Kriegen Reproduzierbarkeit in den Griff: sowohl lokal als auch in
+  Docker
+- Wir schauen mal, wo wir landen; Minimalität später
+- Toll, falls möglichst wenige Tools eingesetzt werden müssen
 #+end_notes
 
 * Nix-Store
@@ -416,7 +409,7 @@ pkgs.stdenv.mkDerivation {
 * Nixify it: Haskell-Service
 
 #+begin_src nix
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs }:
 
 pkgs.haskellPackages.callCabal2nix "haskell-backend" ./. { }
 #+end_src
@@ -509,7 +502,7 @@ libffi.so.8 => /nix/store/gm6q7jmajjmnwd29wgbq2jm3x37vsw3h-libffi-3.4.2/lib/libf
 * Dockerize it: Haskell-Service
 
 #+begin_src nix
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs }:
 
 let haskellBackend = import ../haskell_backend/default.nix { inherit pkgs; };
 in pkgs.dockerTools.buildImage {
@@ -539,7 +532,7 @@ docker load < result
 * Nixify it: Go-Service und Python-Client
 
 #+begin_src nix
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs }:
 
 pkgs.buildGoModule {
   src = ./.;
@@ -550,7 +543,7 @@ pkgs.buildGoModule {
 #+end_src
 
 #+begin_src nix
-{ pkgs ? import <nixpkgs> { } }:
+{ pkgs }:
 
 pkgs.poetry2nix.mkPoetryApplication {
   projectDir = ./.;
@@ -679,7 +672,8 @@ in ...
 
 - Reproduzierbar und programmierbar!
 - Eine Sprache für alles
-- Reproduzierbare (Entwicklungs-)Umgebungen (=nix-shell=) analog
+- Reproduzierbare (Entwicklungs-)Umgebungen (=nix-shell= / =nix develop=)
+  analog
 - Riesige und hilfsbereite Community
 
 #+begin_notes
@@ -707,3 +701,4 @@ in ...
 * Beispielrepo + Folien
 
 - https://github.com/kenranunderscore/docker-mit-nix-talk
+- (Auch Präsentation ist Teil des Projekts und reproduzierbar)
