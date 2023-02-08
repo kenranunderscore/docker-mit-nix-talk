@@ -9,6 +9,7 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Web.Scotty
 import Network.HTTP.Types.Status (status404)
 import qualified Network.Wai.Handler.Warp as Warp
+import System.Console.ANSI
 
 -- | Keys are just strings here.
 type Key = String
@@ -25,20 +26,27 @@ emptyCache = Map.empty
 prettyKey :: Key -> String
 prettyKey key = "'" <> key <> "'"
 
+logM :: MonadIO m => String -> m ()
+logM msg = liftIO $ do
+  setSGR [ SetConsoleIntensity BoldIntensity, SetColor Foreground Vivid Cyan ]
+  putStr "[HASKELL] "
+  setSGR [ Reset ]
+  putStrLn msg
+
 -- | Handle GET /cache/:key by returning a cached value if it exists,
 -- or returning a 404 if it doesn't.
 getFromCache :: TVar NumberCache -> ActionM ()
 getFromCache theCache = do
   k <- param "key"
-  liftIO . putStrLn $ "Received request for key " <> prettyKey k
+  logM $ "Received request for key " <> prettyKey k
   cache <- liftIO $ readTVarIO theCache
   case Map.lookup k cache of
     Nothing -> do
-      liftIO . putStrLn $ "Didn't find " <> prettyKey k <> " in cache"
+      logM $ "Didn't find " <> prettyKey k <> " in cache"
       status status404
       json ("Key not found" :: String)
     Just value -> do
-      liftIO . putStrLn $ "Got it!"
+      logM "Got it!"
       json value
 
 -- | Handle PUT /cache/:key by caching the contents of the "key"
@@ -49,7 +57,7 @@ addToCache theCache = do
   val :: Int <- jsonData
   let logMsg =
         mconcat ["Adding ", prettyKey k, " with value ", show val, " to the cache"]
-  liftIO $ putStrLn logMsg
+  logM logMsg
   -- Update the cache atomically
   liftIO . atomically $
     modifyTVar theCache (Map.alter (const $ Just val) k)
@@ -60,8 +68,8 @@ main = do
   -- Create a thread-safe caching "location".
   theCache <- newTVarIO emptyCache
   -- Server options
-  let port = 8082
-      opts = Options { verbose = 0, settings = Warp.defaultSettings }
+  let warpSettings = Warp.setPort 8082 Warp.defaultSettings
+      opts = Options { verbose = 0, settings = warpSettings }
   -- The server consists only of interaction with /cache/:key: reading
   -- from the cache and writing to it.
   scottyOpts opts $ do

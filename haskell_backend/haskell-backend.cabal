@@ -8,6 +8,7 @@ maintainer:         johannes.maier@active-group.de
 executable haskell-backend
     main-is:          Main.hs
     build-depends:    base
+                    , ansi-terminal
                     , containers
                     , http-types
                     , scotty
