@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
@@ -6,11 +5,10 @@ module Main where
 import Control.Concurrent.STM
 import qualified Data.Map as Map
 import Data.Map (Map)
-import Data.IORef
-import GHC.Generics (Generic)
-import Control.Monad.IO.Class (liftIO)
+import Control.Monad.IO.Class (MonadIO, liftIO)
 import Web.Scotty
-import Network.HTTP.Types.Status
+import Network.HTTP.Types.Status (status404)
+import qualified Network.Wai.Handler.Warp as Warp
 
 -- | Keys are just strings here.
 type Key = String
@@ -59,11 +57,13 @@ addToCache theCache = do
 -- | The entry point.  The server is using a fixed port.
 main :: IO ()
 main = do
-  let port = 8082
   -- Create a thread-safe caching "location".
   theCache <- newTVarIO emptyCache
+  -- Server options
+  let port = 8082
+      opts = Options { verbose = 0, settings = Warp.defaultSettings }
   -- The server consists only of interaction with /cache/:key: reading
   -- from the cache and writing to it.
-  scotty port $ do
+  scottyOpts opts $ do
     get "/cache/:key" $ getFromCache theCache
     put "/cache/:key" $ addToCache theCache
