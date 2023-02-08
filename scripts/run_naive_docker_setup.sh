@@ -12,22 +12,11 @@ docker run --rm --name hab -t -d --network host haskell-backend-0
 sleep 5 # you wouldn't do this in production, of course...
 
 echo
-echo "=================================="
-echo "        PYTHON CLIENT LOGS        "
-echo "=================================="
-echo
 docker run --rm -it --network host python-client-0
 
-echo "=================================="
-echo "         GO BACKEND LOGS          "
-echo "=================================="
 echo
 docker logs gob
 
-echo
-echo "=================================="
-echo "       HASKELL BACKEND LOGS       "
-echo "=================================="
 echo
 docker logs hab
 
