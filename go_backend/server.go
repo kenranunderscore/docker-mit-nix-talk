@@ -29,20 +29,20 @@ func toKey(prod TwoInts) string {
 
 const cachingServiceUrl = "http://127.0.0.1:8082/cache/"
 
-func logMessage(msg string) {
+func logMessage(msg string, args... any) {
 	c := color.New(color.FgMagenta)
 	c.Print("[GO] ")
-	fmt.Println(msg)
+	fmt.Printf(msg + "\n", args...)
 }
 
 func checkCache(prod TwoInts) (int, error) {
 	key := toKey(prod)
-	logMessage(fmt.Sprintf("Looking up key '%v' in cache", key))
+	logMessage("Looking up key '%v' in cache", key)
 
 	url := cachingServiceUrl + key
 	resp, err := http.Get(url)
 	if err != nil {
-		logMessage(fmt.Sprintf("GET request failed: %v", err))
+		logMessage("GET request failed: %v", err)
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
@@ -55,25 +55,25 @@ func checkCache(prod TwoInts) (int, error) {
 }
 
 func addToCache(key string, product int) {
-	logMessage(fmt.Sprintf("Attempting to add key-value pair ('%v', %v) to cache", key, product))
+	logMessage("Attempting to add key-value pair ('%v', %v) to cache", key, product)
 
 	// The payload/body is just the integer product
 	json, err := json.Marshal(product)
 	if err != nil {
-		logMessage(fmt.Sprintf("Error marshalling payload: %v", err))
+		logMessage("Error marshalling payload: %v", err)
 	}
 
 	url := cachingServiceUrl + key
 	request, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(json))
 	if err != nil {
-		logMessage(fmt.Sprintf("Error building PUT request: %v", err))
+		logMessage("Error building PUT request: %v", err)
 	}
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	_, err = client.Do(request)
 	if err != nil {
-		logMessage(fmt.Sprintf("PUT request failed: %v", err))
+		logMessage("PUT request failed: %v", err)
 	}
 }
 
@@ -89,7 +89,7 @@ func expensiveProduct(w http.ResponseWriter, r *http.Request) {
 
 	res, err := checkCache(numbers)
 	if err != nil {
-		logMessage(fmt.Sprintf("Cache lookup didn't succeed"))
+		logMessage("Cache lookup didn't succeed")
 		product := calculateProduct(numbers)
 		addToCache(toKey(numbers), product)
 		json.NewEncoder(w).Encode(product)
