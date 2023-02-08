@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
+	"fmt"
+	color "github.com/fatih/color"
 )
 
 /* Behold/beware: the world's worst Go code, probably */
@@ -28,14 +29,20 @@ func toKey(prod TwoInts) string {
 
 const cachingServiceUrl = "http://127.0.0.1:8082/cache/"
 
+func logMessage(msg string) {
+	c := color.New(color.FgMagenta)
+	c.Print("[GO] ")
+	fmt.Println(msg)
+}
+
 func checkCache(prod TwoInts) (int, error) {
 	key := toKey(prod)
-	log.Printf("Looking up key '%v' in cache", key)
+	logMessage(fmt.Sprintf("Looking up key '%v' in cache", key))
 
 	url := cachingServiceUrl + key
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalln("GET request failed: %v", err)
+		logMessage(fmt.Sprintf("GET request failed: %v", err))
 	}
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
@@ -48,25 +55,25 @@ func checkCache(prod TwoInts) (int, error) {
 }
 
 func addToCache(key string, product int) {
-	log.Printf("Attempting to add key-value pair ('%v', %v) to cache", key, product)
+	logMessage(fmt.Sprintf("Attempting to add key-value pair ('%v', %v) to cache", key, product))
 
 	// The payload/body is just the integer product
 	json, err := json.Marshal(product)
 	if err != nil {
-		log.Fatalf("Error marshalling payload: %v", err)
+		logMessage(fmt.Sprintf("Error marshalling payload: %v", err))
 	}
 
 	url := cachingServiceUrl + key
 	request, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(json))
 	if err != nil {
-		log.Fatalf("Error building PUT request: %v", err)
+		logMessage(fmt.Sprintf("Error building PUT request: %v", err))
 	}
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
 	_, err = client.Do(request)
 	if err != nil {
-		log.Fatalf("PUT request failed: %v", err)
+		logMessage(fmt.Sprintf("PUT request failed: %v", err))
 	}
 }
 
@@ -82,20 +89,20 @@ func expensiveProduct(w http.ResponseWriter, r *http.Request) {
 
 	res, err := checkCache(numbers)
 	if err != nil {
-		log.Println("Cache lookup didn't succeed")
+		logMessage(fmt.Sprintf("Cache lookup didn't succeed"))
 		product := calculateProduct(numbers)
 		addToCache(toKey(numbers), product)
 		json.NewEncoder(w).Encode(product)
 		return
 	}
 
-	log.Println("Cache lookup succeeded")
+	logMessage("Cache lookup succeeded")
 	json.NewEncoder(w).Encode(res)
 }
 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/expensiveProduct", expensiveProduct)
-	log.Println("Listening on port 8081...")
-	log.Fatalln(http.ListenAndServe(":8081", mux))
+	logMessage("Listening on port 8081...")
+	http.ListenAndServe(":8081", mux)
 }
