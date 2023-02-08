@@ -16,15 +16,19 @@ import Network.HTTP.Types.Status
 type Key = String
 
 -- | We're caching numbers, but for simplicity the keys are just
--- strings
+-- strings.
 type NumberCache = Map Key Int
 
+-- | The empty cache.
 emptyCache :: NumberCache
 emptyCache = Map.empty
 
+-- | Pretty-print a key.
 prettyKey :: Key -> String
 prettyKey key = "'" <> key <> "'"
 
+-- | Handle GET /cache/:key by returning a cached value if it exists,
+-- or returning a 404 if it doesn't.
 getFromCache :: TVar NumberCache -> ActionM ()
 getFromCache theCache = do
   k <- param "key"
@@ -39,6 +43,8 @@ getFromCache theCache = do
       liftIO . putStrLn $ "Got it!"
       json value
 
+-- | Handle PUT /cache/:key by caching the contents of the "key"
+-- parameter.
 addToCache :: TVar NumberCache -> ActionM ()
 addToCache theCache = do
   k <- param "key"
@@ -50,14 +56,14 @@ addToCache theCache = do
   liftIO . atomically $
     modifyTVar theCache (Map.alter (const $ Just val) k)
 
+-- | The entry point.  The server is using a fixed port.
 main :: IO ()
 main = do
   let port = 8082
-  -- Create a thread-safe caching "location"
+  -- Create a thread-safe caching "location".
   theCache <- newTVarIO emptyCache
-  -- The server consists only of interaction with
-  -- /cache/:key: reading from the cache and writing
-  -- to it
+  -- The server consists only of interaction with /cache/:key: reading
+  -- from the cache and writing to it.
   scotty port $ do
     get "/cache/:key" $ getFromCache theCache
     put "/cache/:key" $ addToCache theCache
