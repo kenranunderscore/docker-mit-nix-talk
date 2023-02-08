@@ -508,7 +508,6 @@ let haskellBackend = import ../haskell_backend/default.nix { inherit pkgs; };
 in pkgs.dockerTools.buildImage {
   name = "haskell-backend";
   tag = "latest";
-  # contents = [ pkgs.bash pkgs.coreutils ];
   config = {
     # Start the Haskell service as the CMD of the image
     Cmd = "${haskellBackend}/bin/haskell-backend";
