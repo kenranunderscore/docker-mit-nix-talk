@@ -698,6 +698,15 @@ in ...
 - Manche Sprachen/Build-Systeme clashen mit Sandboxing -> impure
 #+end_notes
 
+* Ausblicke / alternative Auslieferungsformate
+
+Es existiert außerdem Unterstützung für:
+
+- Portable =systemd=-Services
+- OCI-Spezifikation
+- AppImage
+- Snap
+
 * Beispielrepo + Folien
 
 - https://github.com/kenranunderscore/docker-mit-nix-talk
