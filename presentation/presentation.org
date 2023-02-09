@@ -11,9 +11,14 @@
 - Teaser für Nix
 
 #+begin_notes
-- Keine Zeit für "was macht Nix, wie macht Nix, was es tut?"
-- Welche konkreten Docker-Probleme löst nix?
-- "Docker als Motivation für Nix"
+- Active Group -> arbeiten ausschließlich mit funktionaler
+  Programmierung -> auch wir haben aber mit DevOps zu tun -> wollen
+  funktionale DevOps -> Tool namens Nix
+- Viele Arten, Nix zu motivieren (reproduzierbare Builds, tolle
+  Deployment-Story, portable Dotfiles mit Paketen, NixOS uvm.)
+- Eigentlich keine Zeit für "was macht Nix, wie macht Nix, was es tut?"
+- -> viele Leute kennen Docker -> "Docker als Motivation für Nix"
+- -> Pain-Points bekannt -> Nix kann helfen
 #+end_notes
 
 * Ausgangssituation
@@ -322,9 +327,21 @@ CMD [ "./haskell-backend" ]
 
 #+begin_notes
 - Tools bedeutet nicht unbedingt "zur Entwicklung"
-- Sobald Docker eingesetzt wird, muss man neue Tools beherrschen
-- Dünnerer Pfad, Abweichen einfach, solange das Tooling es noch
-  zulässt
+- Sobald Docker eingesetzt wird, kommen idR min. 2 Tools hinzu, zB
+  Docker + Package-Manager
+#+end_notes
+
+* Zweiter Versuch: Fazit
+
+➜ Gute Dockerfiles möglich, aber sehr schwer zu schreiben
+
+➜ Je robuster/"besser" das Dockerfile, desto höher der Wartungsaufwand
+
+#+begin_notes
+- Ändere ich was an meinen gelockten Versionen im Service, kann es
+  sein, dass die zlib-Version, die über Apt installiert wurde, nicht
+  passt
+- Punkt, der mir wichtig ist:
 #+end_notes
 
 * Zweiter Versuch: Fazit
@@ -333,13 +350,12 @@ CMD [ "./haskell-backend" ]
 
 ➜ Je "besser" das Dockerfile, desto höher der Wartungsaufwand
 
-➜ Weicht i.d.R. von Entwicklungsumgebung ab (lokales Debugging?)
+➜ *Weicht i.d.R. von Entwicklungsumgebung ab (lokales Debugging?)*
 
 #+begin_notes
-- Sobald Docker eingesetzt wird, kommen idR min. 2 Tools hinzu, zB
-  Docker + Package-Manager
-- Dünnerer "Pfad" + viele Tools => leichteres Abweichen, solange die
-  Tools es zulassen
+- Falls identische Versionen aller Tools und Abhängigkeiten in Prod
+  und Dev, kann ich Probleme lokal nachvollziehen und debuggen
+- An dieser Stelle kommt Nix ins Spiel
 #+end_notes
 
 * Abhängigkeitsmanagement mit Nix!
@@ -443,7 +459,9 @@ nix-store --export $(nix-store -qR $store_path) > closure
 - Geht aber auch ohne Nix (nix-bundle, =nix bundle=)
 #+end_notes
 
-* Laufzeitabhängigkeiten des Caching-Service
+* Wie funktioniert das (grob)?
+
+Laufzeitabhängigkeiten des Caching-Service ohne Nix
 
 #+REVEAL_HTML: <div style="font-size: 60%;">
 
@@ -463,7 +481,9 @@ libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fee89b72000)
 
 #+REVEAL_HTML: </div>
 
-* Laufzeitabhängigkeiten des Caching-Service
+* Wie funktioniert das (grob)?
+
+Laufzeitabhängigkeiten des Caching-Service mit Nix
 
 #+REVEAL_HTML: <div style="font-size: 60%;">
 
@@ -481,19 +501,29 @@ libffi.so.8 => /nix/store/gm6q7jmajjmnwd29wgbq2jm3x37vsw3h-libffi-3.4.2/lib/libf
 /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib/ld-linux-x86-64.so.2 => /nix/store/ayrsyv7npr0lcbann4k9lxr19x813f0z-glibc-2.34-115/lib64/ld-linux-x86-64.so.2 (0x00007fb3b72e2000)
 #+end_src
 
+#+begin_notes
+- Beim Bauen sind alle Abhängigkeiten "da"
+- Es werden die absoluten Pfade dazu hinterlegt
+- Nix wandert rekursiv durch und sammelt genau das auf, was benötigt
+  wird
+- (Damit sind keine Build-Zeit-Abhängigkeiten mehr da)
+- Bei Deployment müssen diese absoluten Pfade kopiert und am gleichen
+  Pfad hinterlegt werden
+#+end_notes
+
 #+REVEAL_HTML: </div>
 
 * Docker-Images mit Nix?
 
-- Docker-Layers bestehen aus File-System-Diffs (OCI Image Format)
-- Kennen Abschluss nixifizierter Anwendungen
+- Docker-Layers bestehen aus File-System-Diffs (Docker/OCI Image Format)
+- Kennen "Abschluss" nixifizierter Anwendungen
 
 ➜ Kennen auch das Diff
 
 ➜ Nix kann Docker-Images erzeugen
 
 #+begin_notes
-- Wenn ich das kenne, muss ich nicht mehrere Layer anlegen; alles auf
+- Gesamtes Diff -> muss ich nicht mehrere Layer anlegen; alles auf
   einen Rutsch
 - geht auch ohne Docker-Installation -> super, wenn CI das Artefakt
   erstellen soll/muss! (kein DinD, kein =docker build=, nur =nix=)
