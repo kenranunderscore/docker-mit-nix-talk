@@ -727,6 +727,11 @@ Es existiert außerdem Unterstützung für:
 - AppImage
 - Snap
 
+* Ressourcen zum Einstieg in Nix
+
+- Neu: https://zero-to-nix.com/
+- Programmiersprachenspezifisch: https://nixos.org/manual/nixpkgs/stable/#chap-language-support
+
 * Beispielrepo + Folien
 
 - https://github.com/kenranunderscore/docker-mit-nix-talk
